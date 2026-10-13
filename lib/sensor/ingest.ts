@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { findDeviceBySensorKeyHash, insertEvents, recordHeartbeat } from '../db';
+import { findDeviceBySensorKeyHash, getKv, insertEvents, MONITORING_SINCE_KV, recordHeartbeat, setKv } from '../db';
 import type { RingDevice, RingEvent } from '../ring/types';
 
 /**
@@ -42,6 +42,7 @@ export function ingestSensorReport(authorization: string | null, body: unknown, 
 
   // Any authenticated report doubles as a heartbeat.
   recordHeartbeat(device.id, now);
+  if (getKv<number>(MONITORING_SINCE_KV) == null) setKv(MONITORING_SINCE_KV, now);
 
   const events: RingEvent[] = [];
   for (const raw of (report.motion ?? []).slice(0, MAX_EVENTS_PER_REPORT)) {

@@ -9,7 +9,9 @@ import StatusCard from '@/components/StatusCard';
 import VisitList from '@/components/VisitList';
 import { getDayReport, getDaySummary, runCheck } from '@/lib/checkin';
 import { listFamilyLog } from '@/lib/db';
+import { pendingScenarioAlert } from '@/lib/demo';
 import { getTrends } from '@/lib/insights';
+import { RULES } from '@/lib/routine/rules';
 import { formatAgo, formatTime, localParts } from '@/lib/routine/time';
 import { familyMemberName } from '@/lib/session';
 import { acknowledgeAlertAction, addFamilyLogAction, deleteFamilyLogAction, pauseAction, resumeAction } from './actions';
@@ -28,6 +30,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const monitoring = report.monitoring;
   const name = report.settings.residentName;
   const trends = getTrends(now, report.settings, report.devices);
+  const pending = monitoring.state === 'demo' ? pendingScenarioAlert(report, now) : null;
   const log = listFamilyLog(now - 7 * 86_400_000, now + 1);
   const hasDoorbell = report.devices.some((d) => d.kind === 'doorbell');
 
@@ -40,6 +43,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <p className="notice">
           You&apos;re looking at <strong>demo data</strong> from a simulated home. <Link href="/setup">Set up a webcam</Link>{' '}
           to start real check-ins.
+        </p>
+      )}
+      {pending && (
+        <p className="notice">
+          Demo scenario: <strong>{pending.label}</strong>.{' '}
+          {pending.at != null
+            ? `Its “${RULES[pending.rule].label}” alert appears at about ${formatTime(pending.at, tz)} home time (it’s ${formatTime(now, tz)} there now). This page refreshes every minute.`
+            : `It plays out during the day, so it won’t raise an alert today. It’s ${formatTime(now, tz)} at home now; try it again in the morning.`}
         </p>
       )}
       {monitoring.state === 'no-sensors' && (

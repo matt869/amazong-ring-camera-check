@@ -54,6 +54,8 @@ Any spare laptop, tablet or phone with a camera works. Movement is detected **on
 4. On the device at the home, scan the QR code (or open the link), tap **Start watching**, and allow the camera.
 5. Leave it plugged in, facing the room, with the page open. The screen stays on while watching.
 
+The missed-morning check starts the morning after the first webcam checks in. A camera set up at noon never saw that morning, so it won't text her about it.
+
 Adding the first webcam replaces the demo data. If every webcam stops checking in (unplugged, Wi-Fi down, page closed), caregivers get a **monitoring offline** alert. They never get a false "no activity" alarm. Resident alerts are held back until data flows again.
 
 ### Using a webcam on another device
@@ -217,7 +219,7 @@ A caregiver can ask "Alexa, ask home check-in how Mom is today" and hear the dai
 
 | Route | Auth | Purpose |
 |---|---|---|
-| `GET /api/health` | public | `{ ok, mode, lastCheckAt }` for uptime monitors. Returns 503 if checks have stalled |
+| `GET /api/health` | public | `{ ok, mode, lastCheckAt }` for uptime monitors (`mode` is `demo`, `webcam`, `ring-account` or `ring-oauth`). Returns 503 if checks have stalled or no sensor is reporting |
 | `POST /api/webhooks/ring` | HMAC | Ring event notifications, signed with `X-Ring-Signature: sha256=<hex>` |
 | `GET /api/summary[?date=]` | session or `Bearer CRON_SECRET` | Status, the day's facts, the note, open alerts. Also runs the check |
 | `GET /api/events?hours=24` | session | Recent events |

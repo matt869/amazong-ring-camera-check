@@ -37,13 +37,13 @@ export async function fetchRecentEvents(limitPerDevice = 50): Promise<RingEvent[
   return events;
 }
 
-interface DemoState {
+export interface DemoState {
   scenario: DemoScenario;
   /** When it was applied (anchors time-relative scenarios). */
   anchor: number;
 }
 
-function getDemoState(): DemoState {
+export function getDemoState(): DemoState {
   const raw = getKv<DemoState | DemoScenario>('demo_scenario');
   if (raw == null) return { scenario: 'normal', anchor: 0 };
   return typeof raw === 'string' ? { scenario: raw, anchor: 0 } : raw;

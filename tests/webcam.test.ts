@@ -22,6 +22,18 @@ const DAY = '2026-03-18';
 const t = (hhmm: string) => at(hhmm, DAY);
 const bearer = `Bearer ${KEY}`;
 const open = () => db.listAlerts({ openOnly: true }).map((a) => a.key);
+/** GET /api/health as an uptime monitor would see it at `now`. */
+const health = async (now: number) => {
+  vi.useFakeTimers({ now, toFake: ['Date'] });
+  try {
+    const { GET } = await import('../app/api/health/route');
+    const res = await GET();
+    const body = (await res.json()) as { ok: boolean; mode: string };
+    return { status: res.status, ok: body.ok, mode: body.mode };
+  } finally {
+    vi.useRealTimers();
+  }
+};
 
 beforeAll(async () => {
   db = await import('../lib/db');
@@ -104,6 +116,8 @@ describe('monitoring offline', () => {
     expect(res.created.map((a) => a.key)).toContain('connection_lost:sensors');
     expect(open().some((k) => k.startsWith('prolonged_inactivity') || k.startsWith('no_morning'))).toBe(false);
     expect(res.created.find((a) => a.key === 'connection_lost:sensors')?.title).toBe('No camera is checking in');
+    // Uptime monitors see it too.
+    expect(await health(t('10:51'))).toEqual({ status: 503, ok: false, mode: 'webcam' });
   });
 
   it('clears when the camera checks in again', async () => {
@@ -112,6 +126,7 @@ describe('monitoring offline', () => {
     const cleared = res.resolved.find((a) => a.key === 'connection_lost:sensors');
     expect(cleared?.resolutionNote).toBe('A camera is checking in again; monitoring is back on.');
     expect(open()).not.toContain('connection_lost:sensors');
+    expect(await health(t('11:01'))).toEqual({ status: 200, ok: true, mode: 'webcam' });
   });
 
   it('a new link revokes the old key', () => {

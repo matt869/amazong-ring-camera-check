@@ -2,7 +2,7 @@ import type { RingDevice, RingEvent } from '../ring/types';
 import { activityFilter, DAY_START_MINUTE, MIN_BASELINE_DAYS, type Baseline } from './baseline';
 import { inferPresence, type Presence } from './presence';
 import { RULES, inWindow, isPaused, type CheckinSettings, type RuleId, type Severity } from './rules';
-import { formatDuration, formatMinuteOfDay, formatTime, localParts } from './time';
+import { formatDuration, formatMinuteOfDay, formatTime, localParts, zonedToUtc } from './time';
 
 export interface AlertCandidate {
   /** Stable dedupe key: the same situation always produces the same key. */
@@ -28,6 +28,11 @@ export interface DetectInput {
    * only device-health rules run.
    */
   dataFlowing?: boolean;
+  /**
+   * When activity first started being recorded (a webcam's first check-in).
+   * A morning that passed before then can't be judged: nothing was watching.
+   */
+  monitoringSince?: number | null;
 }
 
 /** Hours assumed active before enough history exists to learn them. */
@@ -90,9 +95,11 @@ export function detectAnomalies(input: DetectInput): AlertCandidate[] {
   };
 
   // 1. Nothing yet this morning, past the late end of their normal wake-up time.
-  //    If they're out of the house, the absence rule speaks instead.
+  //    If they're out of the house, the absence rule speaks instead. Not on the
+  //    day monitoring started: a sensor set up at noon never saw the morning.
   const { usual, deadline } = wakeDeadline(baseline, settings);
-  if (activityToday.length === 0 && nowLocal.minuteOfDay >= deadline && presence.state !== 'away') {
+  const watchedAllDay = input.monitoringSince == null || input.monitoringSince <= zonedToUtc(nowLocal.dateKey, DAY_START_MINUTE, tz);
+  if (activityToday.length === 0 && nowLocal.minuteOfDay >= deadline && presence.state !== 'away' && watchedAllDay) {
     add(
       'no_morning_activity',
       nowLocal.dateKey,

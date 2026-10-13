@@ -44,6 +44,20 @@ describe('time helpers', () => {
   });
 });
 
+describe('the day monitoring starts', () => {
+  it("doesn't call a morning missed that nothing was watching", () => {
+    const now = at('12:30');
+    const events = history(now);
+    const baseline = computeBaseline(events, { now, timezone: TZ, days: 14, isActivity: activityFilter(devices) });
+    const detect = (monitoringSince: number) =>
+      rules(detectAnomalies({ now, settings, baseline, recentEvents: events, devices, monitoringSince }));
+    // A webcam set up at noon today never saw the morning.
+    expect(detect(at('12:00'))).not.toContain('no_morning_activity');
+    // Watching since before today began: the missed morning is real.
+    expect(detect(at('21:00', addDays(TODAY, -1)))).toContain('no_morning_activity');
+  });
+});
+
 describe('computeBaseline', () => {
   it('learns a morning wake-up time and active daytime hours', () => {
     const now = at('12:00');

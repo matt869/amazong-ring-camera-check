@@ -199,6 +199,9 @@ export function findDeviceBySensorKeyHash(keyHash: string): RingDevice | null {
   return row ? toDevice(row) : null;
 }
 
+/** When the first webcam first checked in: the start of real monitoring. */
+export const MONITORING_SINCE_KV = 'monitoring_since';
+
 export function recordHeartbeat(id: string, now: number): void {
   getDb().prepare('UPDATE devices SET heartbeat_at = ?, online = 1 WHERE id = ?').run(now, id);
 }

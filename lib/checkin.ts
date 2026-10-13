@@ -12,6 +12,7 @@ import {
   listEvents,
   markAlertNotified,
   markReminded,
+  MONITORING_SINCE_KV,
   pruneOldData,
   resolveClearedAlerts,
   setKv,
@@ -173,6 +174,7 @@ export async function evaluateAlerts(now = Date.now()): Promise<CheckResult> {
     recentEvents: recent,
     devices,
     dataFlowing,
+    monitoringSince: getKv<number>(MONITORING_SINCE_KV),
   });
   // Monitoring itself being down is worth telling people about, after a grace period for blips.
   if (
