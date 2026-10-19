@@ -116,6 +116,11 @@ export function formatDateTime(ts: number, tz: string): string {
   return `${date}, ${formatTime(ts, tz)}`;
 }
 
+/** "10:06pm" if `ts` is today (home time), else "Mon, Oct 12, 10:06pm", so an old time never reads as tonight. */
+export function formatWhen(ts: number, tz: string, now = Date.now()): string {
+  return localParts(ts, tz).dateKey === localParts(now, tz).dateKey ? formatTime(ts, tz) : formatDateTime(ts, tz);
+}
+
 /** "just now", "12m ago", "3h 5m ago". */
 export function formatAgo(ms: number): string {
   return ms < 60_000 ? 'just now' : `${formatDuration(ms)} ago`;

@@ -14,6 +14,7 @@ export default function EventTimeline({
   timezone,
   groupByHour = true,
   emptyText = 'No activity recorded.',
+  freshSince,
 }: {
   /** Newest first. */
   events: RingEvent[];
@@ -21,6 +22,8 @@ export default function EventTimeline({
   timezone: string;
   groupByHour?: boolean;
   emptyText?: string;
+  /** Events at or after this time just arrived; they're briefly highlighted. */
+  freshSince?: number;
 }) {
   if (events.length === 0) return <p className="muted">{emptyText}</p>;
 
@@ -42,8 +45,10 @@ export default function EventTimeline({
     const { icon, label } = DESCRIBE[e.kind];
     // Motion on devices that don't count (doorbells by default) is usually someone outside.
     const outside = e.kind === 'motion' && d != null && !d.countsAsActivity;
+    const fresh = freshSince != null && e.occurredAt >= freshSince;
+    const className = [outside && 'outside', fresh && 'fresh'].filter(Boolean).join(' ') || undefined;
     items.push(
-      <li key={e.id} className={outside ? 'outside' : undefined}>
+      <li key={e.id} className={className}>
         <time dateTime={new Date(e.occurredAt).toISOString()}>{formatTime(e.occurredAt, timezone)}</time>
         <span className="icon" aria-hidden>
           {icon}

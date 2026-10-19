@@ -41,7 +41,7 @@ import {
 import { computeStatus, detectAnomalies, ruleActive, wakeDeadline, type StatusSummary } from './routine/detect';
 import { detectOutings, inferPresence, type Presence } from './routine/presence';
 import { isPaused, RULES, type CheckinSettings } from './routine/rules';
-import { addDays, formatDateTime, formatMinuteOfDay, formatTime, localParts, zonedToUtc } from './routine/time';
+import { addDays, formatDateTime, formatMinuteOfDay, formatTime, formatWhen, localParts, zonedToUtc } from './routine/time';
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -183,7 +183,7 @@ export async function evaluateAlerts(now = Date.now()): Promise<CheckResult> {
     now - monitoring.since >= CONNECTION_GRACE_MS &&
     settings.enabledRules.connection_lost
   ) {
-    const since = formatTime(monitoring.since, settings.timezone);
+    const since = formatWhen(monitoring.since, settings.timezone, now);
     candidates.push(
       monitoring.cause === 'ring'
         ? {

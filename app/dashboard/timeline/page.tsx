@@ -1,12 +1,17 @@
 import Link from 'next/link';
 import AlertBanner from '@/components/AlertBanner';
 import EventTimeline from '@/components/EventTimeline';
+import LiveUpdates from '@/components/LiveUpdates';
 import RoutineChart from '@/components/RoutineChart';
 import VisitList from '@/components/VisitList';
 import { getDayReport, getDaySummary, runCheck } from '@/lib/checkin';
+import { latestEventId } from '@/lib/db';
 import { addDays, localParts } from '@/lib/routine/time';
 
 export const dynamic = 'force-dynamic';
+
+/** Events this recent are highlighted as just arrived. */
+const FRESH_MS = 15_000;
 
 export default async function Timeline({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const { date } = await searchParams;
@@ -59,8 +64,11 @@ export default async function Timeline({ searchParams }: { searchParams: Promise
       )}
 
       <section className="card">
-        <h2 style={{ marginBottom: 4 }}>All events</h2>
-        <EventTimeline events={report.events} devices={report.devices} timezone={tz} />
+        <div className="row" style={{ gap: 10, marginBottom: 4 }}>
+          <h2>All events</h2>
+          {report.isToday && <LiveUpdates latestId={latestEventId(now)} />}
+        </div>
+        <EventTimeline events={report.events} devices={report.devices} timezone={tz} freshSince={now - FRESH_MS} />
       </section>
     </div>
   );

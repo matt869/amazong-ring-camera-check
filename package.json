@@ -13,6 +13,7 @@
     "build": "next build",
     "start": "next start",
     "seed": "tsx scripts/seed-events.ts",
+    "simulate": "tsx scripts/simulate.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "ring:login": "tsx scripts/ring-login.ts"

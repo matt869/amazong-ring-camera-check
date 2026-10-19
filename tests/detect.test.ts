@@ -3,7 +3,7 @@ import { activityFilter, computeBaseline, emptyBaseline, percentile } from '../l
 import { computeStatus, detectAnomalies, wakeDeadline } from '../lib/routine/detect';
 import { inferPresence } from '../lib/routine/presence';
 import { inWindow, type CheckinSettings } from '../lib/routine/rules';
-import { addDays, formatDuration, localParts, zonedToUtc } from '../lib/routine/time';
+import { addDays, formatDuration, formatWhen, localParts, zonedToUtc } from '../lib/routine/time';
 import { generateDemoEvents } from '../lib/ring/mock';
 import type { RingEvent } from '../lib/ring/types';
 import { at, devices, ev, history, motion, settings, TODAY, TZ } from './helpers';
@@ -41,6 +41,11 @@ describe('time helpers', () => {
     expect(formatDuration(26 * 60 * min + 5 * min)).toBe('26h 5m');
     expect(formatDuration(109 * 60 * min + 37 * min)).toBe('4d 13h');
     expect(formatDuration(72 * 60 * min)).toBe('3d');
+  });
+
+  it('dates a time that was not today, so it never reads as tonight', () => {
+    expect(formatWhen(at('22:06'), TZ, at('23:00'))).toBe('10:06pm');
+    expect(formatWhen(at('22:06', '2026-03-11'), TZ, at('21:47'))).toBe('Wed, Mar 11, 10:06pm');
   });
 });
 

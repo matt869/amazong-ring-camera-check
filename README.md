@@ -42,6 +42,15 @@ npm run seed -- --scenario gradual-decline     # six weeks of later mornings and
 npm run seed -- --scenario repeat-visitor      # an unexpected caller keeps coming back (visitor alert)
 ```
 
+To watch events arrive live, run the simulator in a second terminal while the dashboard is open:
+
+```bash
+npm run simulate              # one event every 4 seconds, as signed Ring webhooks
+npm run simulate -- --every 2 --loop
+```
+
+The dashboard and timeline show each event within about two seconds, briefly highlighted. Movement from a webcam sensor appears the same way.
+
 To see the escalation ladder in demo mode, add a phone number for her and a neighbor under **Settings → If a day looks different**. With SNS off, each text goes to the server log, including the one-tap reply link you can open.
 
 ## Set up a webcam (no Ring needed)
@@ -103,6 +112,7 @@ Ring rotates the token periodically; the app stores each new one so the connecti
 | `npm test` | Unit and integration tests |
 | `npm run typecheck` | TypeScript check |
 | `npm run seed` | Reset and seed demo data (`--days N`, `--scenario name`) |
+| `npm run simulate` | Send a morning of Ring-style events to the running app, live (`--every N`, `--loop`, `--url`) |
 | `npm run ring:login` | Sign in to Ring once and save the access token |
 
 ## How it works

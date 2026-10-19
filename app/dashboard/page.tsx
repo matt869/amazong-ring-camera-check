@@ -3,20 +3,24 @@ import AlertBanner from '@/components/AlertBanner';
 import AutoRefresh from '@/components/AutoRefresh';
 import EventTimeline from '@/components/EventTimeline';
 import FamilyLog from '@/components/FamilyLog';
+import LiveUpdates from '@/components/LiveUpdates';
 import PauseControl from '@/components/PauseControl';
 import RoutineChart from '@/components/RoutineChart';
 import StatusCard from '@/components/StatusCard';
 import VisitList from '@/components/VisitList';
 import { getDayReport, getDaySummary, runCheck } from '@/lib/checkin';
-import { listFamilyLog } from '@/lib/db';
+import { latestEventId, listFamilyLog } from '@/lib/db';
 import { pendingScenarioAlert } from '@/lib/demo';
 import { getTrends } from '@/lib/insights';
 import { RULES } from '@/lib/routine/rules';
-import { formatAgo, formatTime, localParts } from '@/lib/routine/time';
+import { formatAgo, formatTime, formatWhen, localParts } from '@/lib/routine/time';
 import { familyMemberName } from '@/lib/session';
 import { acknowledgeAlertAction, addFamilyLogAction, deleteFamilyLogAction, pauseAction, resumeAction } from './actions';
 
 export const dynamic = 'force-dynamic';
+
+/** Events this recent are highlighted as just arrived. */
+const FRESH_MS = 15_000;
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ connected?: string }> }) {
   const { connected } = await searchParams;
@@ -74,7 +78,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ) : (
             <>
               <strong>No camera is checking in</strong>
-              {monitoring.since ? ` (last at ${formatTime(monitoring.since, tz)})` : ''}, so alerts can&apos;t fire right now.
+              {monitoring.since ? ` (last at ${formatWhen(monitoring.since, tz, now)})` : ''}, so alerts can&apos;t fire right now.
               Check that {monitoring.detail} is on, plugged in, on Wi-Fi, and the sensor page is open.
             </>
           )}
@@ -140,7 +144,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <div className="grid-2">
         <section className="card stack">
           <div className="spread">
-            <h2>Latest activity</h2>
+            <div className="row" style={{ gap: 10 }}>
+              <h2>Latest activity</h2>
+              {report.isToday && <LiveUpdates latestId={latestEventId(now)} />}
+            </div>
             <Link href="/dashboard/timeline">Full timeline →</Link>
           </div>
           <EventTimeline
@@ -149,6 +156,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             timezone={tz}
             groupByHour={false}
             emptyText="Nothing yet today."
+            freshSince={now - FRESH_MS}
           />
         </section>
 

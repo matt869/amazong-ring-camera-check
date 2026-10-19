@@ -169,6 +169,28 @@ h2 { font-size: 1.05rem; font-weight: 600; }
 .timeline .what { font-weight: 550; }
 .timeline .where { color: var(--text-2); font-size: 14px; }
 .hour-head { font-size: 12px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; padding: 12px 0 2px; }
+/* An event that just arrived: slides in and glows, then settles. */
+.timeline li.fresh { animation: arrive 4s ease-out; }
+@keyframes arrive {
+  0% { background: color-mix(in srgb, var(--accent) 24%, transparent); transform: translateY(-6px); opacity: 0.4; }
+  12% { transform: none; opacity: 1; }
+  100% { background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeline li.fresh { animation: arrive-still 4s ease-out; }
+  @keyframes arrive-still { from { background: color-mix(in srgb, var(--accent) 24%, transparent); } to { background: transparent; } }
+}
+
+/* "Live" indicator: new events show up within a couple of seconds. */
+.live-pill {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+  padding: 2px 9px; border-radius: 999px; color: var(--ok); background: var(--ok-bg);
+}
+.live-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 2s ease-in-out infinite; }
+.live-pill.live-off { color: var(--text-2); background: var(--surface-2); }
+.live-pill.live-off .dot { animation: none; }
+@keyframes pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .live-pill .dot { animation: none; } }
 
 /* Devices */
 .devices { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }

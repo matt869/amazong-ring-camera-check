@@ -308,6 +308,11 @@ export function listEvents(from: number, to: number, limit = 5000): RingEvent[] 
   return rows.map(toEvent);
 }
 
+/** Id of the newest event in the last 48 hours, the same one GET /api/events?hours=48&limit=1 returns. */
+export function latestEventId(now: number): string | null {
+  return listEvents(now - 48 * 60 * 60_000, now + 1, 1)[0]?.id ?? null;
+}
+
 /**
  * Clears alerts and cached summaries plus simulated events, for re-seeding a
  * demo scenario. `allEvents` also drops manual/webhook events (demo mode only).
